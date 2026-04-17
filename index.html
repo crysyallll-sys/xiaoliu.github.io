@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小刘的碎碎念</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; background: #667eea; color: #333; transition: background 1s ease; overflow-x: hidden; }
+    .cloud { position: fixed; pointer-events: none; z-index: 0; }
+    .cloud svg { overflow: visible; }
+    .cloud-1 { top: 10%; right: -200px; animation: float 28s linear infinite; }
+    .cloud-2 { top: 50%; right: -250px; animation: float 35s linear infinite 5s; }
+    .cloud-3 { top: 28%; right: -180px; animation: float 22s linear infinite 10s; }
+    .cloud-4 { top: 72%; right: -220px; animation: float 40s linear infinite 3s; }
+    .cloud-5 { top: 85%; right: -160px; animation: float 32s linear infinite 15s; }
+    @keyframes float { 0% { transform: translateX(0); } 100% { transform: translateX(calc(-100vw - 300px)); } }
+    .card { background: rgba(255,255,255,0.9); border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); position: relative; z-index: 1; }
+   h1 {text-align:center;margin-bottom:24px;font-weight:700;letter-spacing:2px;color:white;}
+    .card { background: #fff; border-radius: 4px; padding: 24px 20px 28px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.08), 0 8px 20px rgba(0,0,0,0.06); position: relative; }
+    input, textarea { width: 100%; border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.2s; }
+    input:focus, textarea:focus { border-color: #999; }
+    textarea { resize: vertical; min-height: 120px; margin-top: 10px; }
+    label { font-size: 13px; color: #666; font-weight: 500; }
+    button { background: #333; color: #fff; border: none; border-radius: 6px; padding: 10px 24px; font-size: 14px; cursor: pointer; transition: background 0.2s; }
+    button:hover { background: #555; }
+    .entry { background: #fff; border-radius: 4px; padding: 20px 20px 30px 20px; margin-bottom: 28px; position: relative; box-shadow: 0 2px 6px rgba(0,0,0,0.1), 0 8px 20px rgba(0,0,0,0.08), 2px 4px 8px rgba(0,0,0,0.06); transform: rotate(-0.5deg); }
+    .entry::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 16px; height: 16px; background: radial-gradient(circle, #999 3px, transparent 3px); border-radius: 50%; box-shadow: 0 0 0 3px #ccc, 0 0 0 4px #aaa; z-index: 2; }
+    .entry::after { content: ''; position: absolute; bottom: 0; right: 0; width: 40px; height: 40px; background: linear-gradient(135deg, transparent 50%, #f0f0f0 50%) no-repeat; background-size: 100% 100%; border-bottom-right-radius: 4px; box-shadow: -2px -2px 4px rgba(0,0,0,0.04); }
+    .entry-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; margin-top: 8px; padding-top: 4px; }
+    .entry-date { font-size: 12px; color: #aaa; margin-bottom: 8px; }
+    .entry-body { font-size: 14px; color: #555; white-space: pre-wrap; line-height: 1.7; }
+    .empty { text-align: center; color: #bbb; font-size: 14px; padding: 30px 0; transform: none; }
+    .delete-btn { font-size: 12px; color: #e74c3c; background: none; border: none; padding: 0; cursor: pointer; margin-top: 8px; }
+    .delete-btn:hover { color: #c0392b; }
+    .player { position: fixed; top: 16px; right: 16px; z-index: 100; }
+    .record { width: 60px; height: 60px; border-radius: 50%; cursor: pointer; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2); }
+    .record svg { display: block; }
+    .record.spinning { animation: spin 2s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .tonearm { position: absolute; top: -4px; right: -8px; width: 36px; height: 8px; transform-origin: right center; transform: rotate(-30deg); transition: transform 0.3s ease; pointer-events: none; }
+    .tonearm::before { content: ''; position: absolute; right: 0; top: 1px; width: 8px; height: 6px; background: linear-gradient(180deg, #e0e0e0, #999); border-radius: 2px; }
+    .tonearm::after { content: ''; position: absolute; left: 0; top: 3px; width: 28px; height: 3px; background: linear-gradient(180deg, #ccc, #666); border-radius: 1px; }
+    .tonearm.playing { transform: rotate(-10deg); }
+  </style>
+</head>
+<body>
+  <div class="cloud cloud-1">
+    <svg width="160" height="80" viewBox="0 0 160 80">
+      <defs>
+        <linearGradient id="cg1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fff"/>
+          <stop offset="100%" stop-color="#d0d0d0"/>
+        </linearGradient>
+        <filter id="shadow1" x="-20%" y="-20%" width="140%" height="160%">
+          <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000" flood-opacity="0.15"/>
+        </filter>
+      </defs>
+      <g filter="url(#shadow1)">
+        <ellipse cx="55" cy="50" rx="45" ry="28" fill="url(#cg1)"/>
+        <ellipse cx="95" cy="48" rx="50" ry="30" fill="url(#cg1)"/>
+        <ellipse cx="115" cy="55" rx="35" ry="22" fill="url(#cg1)"/>
+        <ellipse cx="40" cy="55" rx="30" ry="20" fill="url(#cg1)"/>
+        <ellipse cx="75" cy="35" rx="38" ry="26" fill="url(#cg1)"/>
+        <ellipse cx="105" cy="32" rx="30" ry="22" fill="url(#cg1)"/>
+      </g>
+    </svg>
+  </div>
+  <div class="cloud cloud-2">
+    <svg width="200" height="100" viewBox="0 0 200 100">
+      <defs>
+        <linearGradient id="cg2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fff"/>
+          <stop offset="100%" stop-color="#c8c8c8"/>
+        </linearGradient>
+        <filter id="shadow2" x="-20%" y="-20%" width="140%" height="160%">
+          <feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#000" flood-opacity="0.18"/>
+        </filter>
+      </defs>
+      <g filter="url(#shadow2)">
+        <ellipse cx="60" cy="62" rx="55" ry="35" fill="url(#cg2)"/>
+        <ellipse cx="120" cy="58" rx="60" ry="38" fill="url(#cg2)"/>
+        <ellipse cx="150" cy="68" rx="42" ry="28" fill="url(#cg2)"/>
+        <ellipse cx="45" cy="68" rx="38" ry="25" fill="url(#cg2)"/>
+        <ellipse cx="90" cy="40" rx="48" ry="32" fill="url(#cg2)"/>
+        <ellipse cx="130" cy="35" rx="38" ry="28" fill="url(#cg2)"/>
+        <ellipse cx="170" cy="45" rx="28" ry="22" fill="url(#cg2)"/>
+      </g>
+    </svg>
+  </div>
+  <div class="cloud cloud-3">
+    <svg width="130" height="65" viewBox="0 0 130 65">
+      <defs>
+        <linearGradient id="cg3" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fff"/>
+          <stop offset="100%" stop-color="#d8d8d8"/>
+        </linearGradient>
+        <filter id="shadow3" x="-20%" y="-20%" width="140%" height="160%">
+          <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#000" flood-opacity="0.12"/>
+        </filter>
+      </defs>
+      <g filter="url(#shadow3)">
+        <ellipse cx="45" cy="42" rx="38" ry="24" fill="url(#cg3)"/>
+        <ellipse cx="80" cy="40" rx="42" ry="25" fill="url(#cg3)"/>
+        <ellipse cx="100" cy="48" rx="28" ry="18" fill="url(#cg3)"/>
+        <ellipse cx="32" cy="48" rx="25" ry="17" fill="url(#cg3)"/>
+        <ellipse cx="62" cy="28" rx="32" ry="22" fill="url(#cg3)"/>
+        <ellipse cx="90" cy="26" rx="26" ry="18" fill="url(#cg3)"/>
+      </g>
+    </svg>
+  </div>
+  <div class="cloud cloud-4">
+    <svg width="180" height="90" viewBox="0 0 180 90">
+      <defs>
+        <linearGradient id="cg4" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fff"/>
+          <stop offset="100%" stop-color="#ccc"/>
+        </linearGradient>
+        <filter id="shadow4" x="-20%" y="-20%" width="140%" height="160%">
+          <feDropShadow dx="0" dy="9" stdDeviation="7" flood-color="#000" flood-opacity="0.16"/>
+        </filter>
+      </defs>
+      <g filter="url(#shadow4)">
+        <ellipse cx="55" cy="55" rx="50" ry="32" fill="url(#cg4)"/>
+        <ellipse cx="110" cy="52" rx="55" ry="34" fill="url(#cg4)"/>
+        <ellipse cx="140" cy="62" rx="38" ry="25" fill="url(#cg4)"/>
+        <ellipse cx="40" cy="62" rx="35" ry="23" fill="url(#cg4)"/>
+        <ellipse cx="82" cy="35" rx="44" ry="30" fill="url(#cg4)"/>
+        <ellipse cx="120" cy="30" rx="35" ry="25" fill="url(#cg4)"/>
+      </g>
+    </svg>
+  </div>
+  <div class="cloud cloud-5">
+    <svg width="120" height="60" viewBox="0 0 120 60">
+      <defs>
+        <linearGradient id="cg5" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fff"/>
+          <stop offset="100%" stop-color="#dadada"/>
+        </linearGradient>
+        <filter id="shadow5" x="-20%" y="-20%" width="140%" height="160%">
+          <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000" flood-opacity="0.12"/>
+        </filter>
+      </defs>
+      <g filter="url(#shadow5)">
+        <ellipse cx="40" cy="38" rx="35" ry="22" fill="url(#cg5)"/>
+        <ellipse cx="75" cy="36" rx="38" ry="23" fill="url(#cg5)"/>
+        <ellipse cx="95" cy="43" rx="25" ry="16" fill="url(#cg5)"/>
+        <ellipse cx="28" cy="43" rx="22" ry="15" fill="url(#cg5)"/>
+        <ellipse cx="58" cy="24" rx="30" ry="20" fill="url(#cg5)"/>
+        <ellipse cx="85" cy="22" rx="24" ry="17" fill="url(#cg5)"/>
+      </g>
+    </svg>
+  </div>
+  <div class="player">
+    <div class="record" id="record" onclick="togglePlay()">
+      <svg width="60" height="60" viewBox="0 0 60 60">
+        <defs>
+          <radialGradient id="discGrad" cx="40%" cy="35%" r="60%">
+            <stop offset="0%" stop-color="#4a4a4a"/>
+            <stop offset="50%" stop-color="#1a1a1a"/>
+            <stop offset="100%" stop-color="#000"/>
+          </radialGradient>
+          <radialGradient id="labelGrad" cx="45%" cy="40%" r="55%">
+            <stop offset="0%" stop-color="#e74c3c"/>
+            <stop offset="100%" stop-color="#c0392b"/>
+          </radialGradient>
+          <filter id="discShadow">
+            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.4"/>
+          </filter>
+        </defs>
+        <circle cx="30" cy="30" r="29" fill="url(#discGrad)" filter="url(#discShadow)"/>
+        <circle cx="30" cy="30" r="28" fill="none" stroke="#333" stroke-width="0.5"/>
+        <circle cx="30" cy="30" r="25" fill="none" stroke="#2a2a2a" stroke-width="0.3"/>
+        <circle cx="30" cy="30" r="22" fill="none" stroke="#333" stroke-width="0.3"/>
+        <circle cx="30" cy="30" r="19" fill="none" stroke="#2a2a2a" stroke-width="0.3"/>
+        <circle cx="30" cy="30" r="16" fill="none" stroke="#333" stroke-width="0.3"/>
+        <circle cx="30" cy="30" r="13" fill="none" stroke="#2a2a2a" stroke-width="0.3"/>
+        <circle cx="30" cy="30" r="10" fill="none" stroke="#333" stroke-width="0.3"/>
+        <circle cx="30" cy="30" r="8" fill="url(#labelGrad)"/>
+        <circle cx="30" cy="30" r="2.5" fill="#222"/>
+        <circle cx="30" cy="30" r="1" fill="#111"/>
+      </svg>
+    </div>
+    <div class="tonearm" id="tonearm"></div>
+  </div>
+  <audio id="audio" loop crossorigin="anonymous" src="11223_副本.mp3"></audio>
+
+  <h1>我的碎碎念</h1>
+
+  <div class="card">
+    <label>标题</label>
+    <input type="text" id="titleInput" placeholder="今天发生了什么...">
+    <label style="margin-top:12px">正文</label>
+    <textarea id="bodyInput" placeholder="写下你的心情..."></textarea>
+    <div style="display:flex; gap:8px; margin-top:12px">
+      <input type="text" id="cityInput" placeholder="查询城市天气..." style="flex:1">
+      <button onclick="fetchWeather()">查询天气</button>
+    </div>
+    <div id="weatherResult" style="margin-top:12px; font-size:14px; color:#555;"></div>
+    <div style="text-align:right; margin-top:12px">
+      <button onclick="saveEntry()">保存</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div id="entryList"></div>
+  </div>
+
+  <script>
+    const KEY = '9dde8b6ff896d5bcd29b5574241ee85a';
+
+    const weatherColors = {
+      '晴': '#667eea',
+      '多云': '#606c88',
+      '阴': '#4a5568',
+      '雨': '#4286f4',
+      '雪': '#bdc3c7',
+      '雾': '#b8c6db',
+      '沙尘': '#c9a66b',
+      '雷阵雨': '#4ca1af',
+      '小雨': '#4a6572',
+      '中雨': '#3a4a5a',
+      '大雨': '#2c3e50',
+      '暴雪': '#2c3e50',
+    };
+
+    function setWeatherBg(weather) {
+      let color = weatherColors['晴'];
+      for (const [k, v] of Object.entries(weatherColors)) {
+        if (weather.includes(k)) { color = v; break; }
+      }
+      document.body.style.background = color;
+    }
+
+    function autoWeather() {
+      fetch(`https://restapi.amap.com/v3/ip?key=${KEY}`)
+        .then(r => r.json())
+        .then(data => {
+          const city = data.city || data.province;
+          if (!city) throw new Error('ip定位失败');
+          return fetch(`https://restapi.amap.com/v3/weather/weatherInfo?city=${encodeURIComponent(city)}&key=${KEY}&extensions=base`)
+            .then(r => r.json())
+            .then(w => ({ city, ...w }));
+        })
+        .then(data => {
+          if (data.lives && data.lives[0]) {
+            const live = data.lives[0];
+            document.getElementById('weatherResult').textContent = `${live.province}${live.city}: ${live.weather} ${live.temperature}°C`;
+            setWeatherBg(live.weather);
+          }
+        })
+        .catch(() => {
+          document.getElementById('weatherResult').textContent = '天气获取失败';
+        });
+    }
+
+    autoWeather();
+
+    const audio = document.getElementById('audio');
+    audio.volume = 0.7;
+
+    function togglePlay() {
+      const record = document.getElementById('record');
+      const tonearm = document.getElementById('tonearm');
+      if (audio.paused) {
+        audio.play();
+        record.classList.add('spinning');
+        tonearm.classList.add('playing');
+      } else {
+        audio.pause();
+        record.classList.remove('spinning');
+        tonearm.classList.remove('playing');
+      }
+    }
+
+    function setVolume(v) { audio.volume = v; }
+
+    function toggleLoop() {
+      audio.loop = !audio.loop;
+      document.getElementById('loopBtn').style.opacity = audio.loop ? 1 : 0.4;
+    }
+
+    const STORAGE_KEY = 'diary_entries';
+
+    function getEntries() {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    }
+
+    function saveEntries(entries) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    }
+
+    function formatDate(ts) {
+      const d = new Date(ts);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    }
+
+    async function fetchWeather() {
+      const city = document.getElementById('cityInput').value.trim();
+      if (!city) return;
+      const result = document.getElementById('weatherResult');
+      result.textContent = '查询中...';
+      try {
+        const res = await fetch(`https://restapi.amap.com/v3/weather/weatherInfo?city=${encodeURIComponent(city)}&key=${KEY}&extensions=base`);
+        const data = await res.json();
+        if (data.lives && data.lives[0]) {
+          const live = data.lives[0];
+          result.textContent = `${live.city}: ${live.weather} ${live.temperature}°C`;
+          setWeatherBg(live.weather);
+        } else {
+          result.textContent = '未找到该城市天气';
+        }
+      } catch {
+        result.textContent = '查询失败，请重试';
+      }
+    }
+
+    function saveEntry() {
+      const title = document.getElementById('titleInput').value.trim();
+      const body = document.getElementById('bodyInput').value.trim();
+      if (!title && !body) return;
+
+      const entries = getEntries();
+      entries.unshift({ id: Date.now(), title, body, date: new Date().toISOString() });
+      saveEntries(entries);
+
+      document.getElementById('titleInput').value = '';
+      document.getElementById('bodyInput').value = '';
+      render();
+    }
+
+    function deleteEntry(id) {
+      const entries = getEntries().filter(e => e.id !== id);
+      saveEntries(entries);
+      render();
+    }
+
+    function render() {
+      const list = document.getElementById('entryList');
+      const entries = getEntries();
+      if (entries.length === 0) {
+        list.innerHTML = '<div class="empty">还没有日记，开始写第一篇吧</div>';
+        return;
+      }
+      list.innerHTML = entries.map((e, i) => `
+        <div class="entry" style="transform: rotate(${(i % 2 === 0 ? -0.5 : 0.5)}deg);">
+          <div class="entry-title">${e.title || '无标题'}</div>
+          <div class="entry-date">${formatDate(e.id)}</div>
+          <div class="entry-body">${e.body}</div>
+          <button class="delete-btn" onclick="deleteEntry(${e.id})">删除</button>
+        </div>
+      `).join('');
+    }
+
+    render();
+  </script>
+</body>
+</html>
